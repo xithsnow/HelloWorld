@@ -15,6 +15,7 @@
         android:layout_centerInParent="true"
         app:srcCompat="@drawable/img_splash"
         android:onClick="onClick"
+        android:clickable="true"
         />
 
 </RelativeLayout>

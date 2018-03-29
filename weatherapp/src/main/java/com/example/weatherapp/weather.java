@@ -11,15 +11,20 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
-import java.security.Permission;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 
@@ -41,14 +46,90 @@ public class weather extends AppCompatActivity {
 
     ivIcon = (ImageView)findViewById(R.id.weather_icon);
 
-     new WeatherRetrieval().execute();
+    // new WeatherRetrieval().execute();
+        volleyRequest();
     }
 
 
 
     public void refresh(View view) {
-        new WeatherRetrieval().execute();
+        //new WeatherRetrieval().execute();
+        //Log.d(weather.class.getSimpleName(), "refresh: Refresh button is hit");
+        volleyRequest();
     }
+
+    private void volleyRequest() {
+        //Log.d(weather.class.getSimpleName(), "volleyRequest: Invoked");
+        RequestQueue queue = Volley.newRequestQueue(this);
+        StringRequest strReq = new StringRequest(Request.Method.GET, WEATHER_SOUCE, new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+                //Log.d(weather.class.getSimpleName(), "onResponse: Response ");
+                try {
+                    final JSONObject weatherJSON = new JSONObject(response);
+
+                    tvLocation.setText(weatherJSON.getString("name") + "," + weatherJSON.getJSONObject("sys").getString("country"));
+                    tvWindSpeed.setText(String.valueOf(weatherJSON.getJSONObject("wind").getDouble("speed")) + " mps");
+                    tvCloud.setText(String.valueOf(weatherJSON.getJSONObject("clouds").getInt("all")) + "%");
+
+                    final JSONObject mainJSON = weatherJSON.getJSONObject("main");
+                    double temperatueK = mainJSON.getDouble("temp");
+                    double temp = temperatueK - 273.15;
+                    NumberFormat formatter = new DecimalFormat("#.0");
+                    tvTemp.setText(formatter.format(temp));
+                    tvHumidity.setText(String.valueOf(mainJSON.getInt("humidity")) + "%");
+
+                    final JSONArray weatherJSONARR = weatherJSON.getJSONArray("weather");
+                    if (weatherJSONARR.length() > 0) {
+                        int code = weatherJSONARR.getJSONObject(0).getInt("id");
+                        ivIcon.setImageResource(getIcon(code));
+                    }
+
+
+                } catch (Exception e) {
+                    Log.e(weather.class.getSimpleName(), "onPostExecute: " + e.getMessage());
+                }
+
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError err) {
+                Log.e(weather.class.getSimpleName(), "onErrorResponse: ERROR" + err.getMessage() );
+            }
+        });
+        queue.add(strReq);
+    }
+        public int getIcon(int num1) {
+            //Log.d(weather.class.getSimpleName(), "inBetween: "+num1);
+            if(num1 >= 200 && num1 <=232){
+                return R.drawable.ic_thunderstorm_large;
+            }else if(num1 >= 300 && num1 <= 321){
+                return R.drawable.ic_drizzle_large;
+            }else if(num1>= 500 && num1 < 531){
+                return R.drawable.ic_rain_large;
+            }else if(num1>= 600 && num1 < 622){
+                return R.drawable.ic_snow_large;
+            }else if(num1 == 800){
+                return R.drawable.ic_day_few_clouds_large;
+            }else if(num1 == 802){
+                return R.drawable.ic_scattered_clouds_large;
+            }else if(num1>= 803 && num1 < 804){
+                return R.drawable.ic_broken_clouds_large;
+            }else if(num1>= 701 && num1 < 762){
+                return R.drawable.ic_fog_large;
+            }else if(num1 == 781 || num1 == 900){
+                return R.drawable.ic_tornado_large;
+            }else if(num1 == 905){
+                return R.drawable.ic_windy_large;
+            }else if(num1 == 906){
+                return R.drawable.ic_hail_large;
+            }
+            else{
+                return 802;
+            }
+
+        }
+/*
 
     private class WeatherRetrieval extends AsyncTask<Void, Void, String>
     {
@@ -170,6 +251,7 @@ public class weather extends AppCompatActivity {
         }
 
     }
+    */
 
 
 }

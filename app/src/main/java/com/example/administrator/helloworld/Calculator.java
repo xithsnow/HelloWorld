@@ -1,6 +1,7 @@
 package com.example.administrator.helloworld;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Editable;
@@ -22,7 +23,12 @@ public class Calculator extends AppCompatActivity {
 private EditText etLoanAmount, etDownPayment, etTerm, etAnnualInterestRate;
 private TextView tvMonthlyRepayment, tvTotalRepayment, tvTotalInterest, tvAverageMonthlyInterest;
 
-
+public static final String PREF_CALC = "LoanCalc";
+public static final String HAS_RECORD = "hasRecord";
+public static final String MONTH_REPAY = "monthly repayment";
+public static final String TOT_REPAY = "total repayment";
+public static final String TOT_INTER = "total interest";
+public static final String MONTH_INST = "monthly installment";
 
 
     @Override
@@ -41,6 +47,13 @@ private TextView tvMonthlyRepayment, tvTotalRepayment, tvTotalInterest, tvAverag
         tvTotalInterest = (TextView)findViewById(R.id.total_interest);
         tvAverageMonthlyInterest = (TextView)findViewById(R.id.average_monthly_interest);
 
+        SharedPreferences sp = getSharedPreferences(PREF_CALC,Context.MODE_PRIVATE);
+        if(sp.getBoolean(HAS_RECORD,false)){
+            tvMonthlyRepayment.setText(sp.getString(MONTH_REPAY,"0.00"));
+            tvTotalRepayment.setText(sp.getString(TOT_REPAY,"0.00"));
+            tvTotalInterest.setText(sp.getString(TOT_INTER,"0.00"));
+            tvAverageMonthlyInterest.setText(sp.getString(MONTH_INST,"0.00"));
+        }
     }
 
 
@@ -110,6 +123,24 @@ private TextView tvMonthlyRepayment, tvTotalRepayment, tvTotalInterest, tvAverag
             tvTotalRepayment.setText(dp2format.format(totalRepay));
             tvTotalInterest.setText(dp2format.format(totalInter));
             tvAverageMonthlyInterest.setText(dp2format.format(monthlyInt));
+            /*
+            public static final String PREF_CALC = "LoanCalc";
+            public static final String HAS_RECORD = "hasRecord";
+            public static final String MONTH_REPAY = "monthly repayment";
+            public static final String TOT_REPAY = "total repayment";
+            public static final String TOT_INTER = "total interest";
+            public static final String MONTH_INST = "monthly installment";
+
+             */
+            SharedPreferences sp = getSharedPreferences(PREF_CALC, Context.MODE_PRIVATE);
+            SharedPreferences.Editor editor = sp.edit();
+            editor.putBoolean(HAS_RECORD,true);
+            editor.putString(MONTH_REPAY,dp2format.format(monthlyRepay));
+            editor.putString(TOT_REPAY,dp2format.format(totalRepay));
+            editor.putString(TOT_INTER,dp2format.format(totalInter));
+            editor.putString(MONTH_INST,dp2format.format(monthlyInt));
+            editor.apply();
+
         }
 
     }
